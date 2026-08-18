@@ -1,0 +1,19 @@
+[project]
+name = "omie-data-pipeline"
+version = "0.1.0"
+description = "Pipeline ETL para dados da API Omie com destino ao Supabase."
+requires-python = ">=3.14,<3.15"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3,<9",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py314"

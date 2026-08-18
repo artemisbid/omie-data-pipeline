@@ -2,7 +2,7 @@
 
 Pipeline ETL planejado para extrair dados da Omie, preservar payloads brutos, transformar os dados em estruturas úteis para análise e carregar o resultado no Supabase com upsert idempotente.
 
-Status atual: documentação inicial estruturada. A arquitetura está definida, mas a implementação do pipeline ainda será construída.
+Status atual: documentação e fundação inicial estruturadas. Os contratos, adaptadores locais e testes estão em construção; a integração real com Omie e Supabase permanece planejada.
 
 Classificação usada nesta documentação:
 
@@ -40,6 +40,7 @@ Escopo atual do MVP:
 - Armazenamento de JSON bruto para replay.
 - Carga inicial completa e, depois, carga incremental com checkpoint.
 - Supabase como destino final com colunas tipadas e payload bruto complementar.
+- Python 3.14 como versão atual de desenvolvimento local.
 
 Fora do MVP inicial:
 
@@ -89,4 +90,4 @@ Avisos importantes:
 
 - Credenciais não devem ser versionadas.
 - O arquivo `.env` deve permanecer fora do Git.
-- Comandos operacionais só serão documentados como executáveis quando a CLI existir de fato.
+- A CLI inicial existe, mas os fluxos reais devem ser validados localmente antes do uso em produção.

@@ -1,9 +1,10 @@
 # Desenvolvimento
 
-## Stack planejada
+## Stack da fundação
 
-- Python 3.12
+- Python 3.14
 - `uv` para gestão de ambiente e dependências
+- `pytest` para testes locais sem rede
 - Tipagem estática progressiva
 - Testes automatizados desde a base do projeto
 
@@ -56,5 +57,6 @@ Exemplos de prefixos:
 - nenhum segredo em arquivos versionados;
 - nomes consistentes entre código e docs;
 - testes relevantes executados quando já existirem;
+- `uv run pytest` executado localmente;
 - mudança pequena o suficiente para revisão clara;
 - roadmap e ADR atualizados quando a decisão arquitetural mudar.

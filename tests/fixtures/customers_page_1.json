@@ -1,0 +1,16 @@
+{
+  "pagina": 1,
+  "total_de_paginas": 1,
+  "clientes_cadastro": [
+    {
+      "codigo_cliente_omie": 101,
+      "razao_social": "Cliente Fictício A",
+      "cnpj_cpf": "00.000.000/0001-00"
+    },
+    {
+      "codigo_cliente_omie": 102,
+      "razao_social": "Cliente Fictício B",
+      "cnpj_cpf": "11.111.111/0001-11"
+    }
+  ]
+}

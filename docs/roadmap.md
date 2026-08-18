@@ -9,8 +9,8 @@ Estados usados:
 ## Marcos
 
 1. Documentação — `done`
-2. Fundação Python — `planned`
-3. Extract de Clientes — `planned`
+2. Fundação Python — `in progress`
+3. Extract de Clientes — `in progress`
 4. Extract de Serviços — `planned`
 5. Transformações — `planned`
 6. Load no Supabase — `planned`
