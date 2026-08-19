@@ -1,23 +1,22 @@
 # Operação
 
-Este documento descreve o comportamento operacional planejado do pipeline.
+Este documento descreve o comportamento operacional do pipeline. Os fluxos
+`run`, `extract` e `replay` já foram validados localmente em execução controlada.
 
 ## Fluxos planejados
 
-Fluxos de CLI previstos:
+Fluxos de CLI disponíveis:
 
 - `run`: executa extract, transform e load.
 - `extract`: executa apenas a extração e grava payload bruto.
-- `replay`: reprocessa dados brutos já persistidos.
-
-Esses fluxos ainda não estão implementados.
+- `replay`: reprocessa dados brutos já persistidos, sem chamar a Omie.
 
 ## Escopo de execução
 
 O operador deverá poder executar:
 
 - apenas Clientes
-- apenas Produtos
+- apenas Serviços
 - todos os recursos registrados
 
 ## Quando usar cada modo
@@ -79,9 +78,27 @@ O replay deverá ler o armazenamento bruto associado a um `run_id` e reexecutar 
 
 ## Logs e retenção local
 
-Política inicial planejada:
+Política inicial:
 
 - logs estruturados por execução;
 - correlação por `run_id`;
 - retenção local de payload bruto;
-- retenção exata ainda será definida antes da implementação operacional.
+- retenção exata ainda depende de decisão do responsável pelo projeto.
+
+## Validação atual
+
+- Clientes e Serviços foram executados em modo `full` com limite controlado de
+  uma página.
+- Os registros foram carregados no Supabase e os checkpoints foram atualizados
+  após sucesso.
+- A reexecução de Clientes manteve a mesma quantidade de registros, validando
+  o upsert idempotente.
+- O replay foi executado com sucesso a partir dos JSONs locais.
+
+## Limitações conhecidas
+
+- A estratégia incremental ainda não está habilitada para produção; o
+  checkpoint temporal precisa de contrato validado com a Omie.
+- Ainda faltam testes ampliados de múltiplas páginas, falha do Supabase e
+  execução completa sem limite de páginas.
+- Periodicidade e retenção dos arquivos brutos ainda não foram definidas.

@@ -25,13 +25,13 @@ Os payloads brutos podem conter dados pessoais e precisam ser tratados como mate
 
 ## Supabase
 
-Diretrizes planejadas para o MVP:
+Diretrizes aplicadas no MVP:
 
-- tabelas expostas publicamente devem ter RLS;
-- nenhum acesso será concedido para `anon`;
-- nenhum acesso será concedido para `authenticated`;
+- as tabelas possuem RLS habilitado;
+- nenhum acesso foi concedido para `anon`;
+- nenhum acesso foi concedido para `authenticated`;
 - cargas do pipeline usarão credencial de backend;
-- tabelas serão criadas por migrations, não durante uma execução normal.
+- tabelas foram criadas por migration, não durante uma execução normal.
 
 ## Logs e observabilidade
 
