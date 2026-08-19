@@ -3,14 +3,12 @@
   "total_de_paginas": 1,
   "cadastros": [
     {
-      "codigo_servico": 201,
-      "descricao": "Serviço Fictício A",
-      "valor_unitario": 150.0
+      "cabecalho": {"nCodServ": 201, "cCodigo": "S-201"},
+      "descricao": {"cDescrCompleta": "Serviço Fictício A"}
     },
     {
-      "codigo_servico": 202,
-      "descricao": "Serviço Fictício B",
-      "valor_unitario": 250.0
+      "cabecalho": {"nCodServ": 202, "cCodigo": "S-202"},
+      "descricao": {"cDescrCompleta": "Serviço Fictício B"}
     }
   ]
 }

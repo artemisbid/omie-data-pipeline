@@ -12,18 +12,25 @@ def chunk_items(items: list[dict], page_size: int) -> Iterable[list[dict]]:
         yield items[index : index + page_size]
 
 
-def build_page_params(page_number: int, page_size: int, extra_params: Mapping[str, Any] | None = None) -> dict[str, Any]:
+def build_page_params(
+    page_number: int,
+    page_size: int,
+    extra_params: Mapping[str, Any] | None = None,
+    *,
+    page_param: str = "pagina",
+    page_size_param: str = "registros_por_pagina",
+) -> dict[str, Any]:
     params: dict[str, Any] = {
-        "pagina": page_number,
-        "registros_por_pagina": page_size,
+        page_param: page_number,
+        page_size_param: page_size,
     }
     if extra_params:
         params.update(extra_params)
     return params
 
 
-def get_total_pages(payload: Mapping[str, Any]) -> int | None:
-    raw_value = payload.get("total_de_paginas")
+def get_total_pages(payload: Mapping[str, Any], key: str = "total_de_paginas") -> int | None:
+    raw_value = payload.get(key)
     if raw_value is None:
         return None
 
@@ -33,8 +40,14 @@ def get_total_pages(payload: Mapping[str, Any]) -> int | None:
         return None
 
 
-def has_more_pages(payload: Mapping[str, Any], current_page: int, payload_key: str) -> bool:
-    total_pages = get_total_pages(payload)
+def has_more_pages(
+    payload: Mapping[str, Any],
+    current_page: int,
+    payload_key: str,
+    *,
+    total_pages_key: str = "total_de_paginas",
+) -> bool:
+    total_pages = get_total_pages(payload, total_pages_key)
     if total_pages is not None:
         return current_page < total_pages
 

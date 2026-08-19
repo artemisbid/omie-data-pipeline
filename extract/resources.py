@@ -23,16 +23,19 @@ CUSTOMERS = ResourceSpec(
 
 SERVICES = ResourceSpec(
     name=ResourceName.SERVICES,
-    endpoint="https://app.omie.com.br/api/v1/servicos/servicos/",
-    method="ListarServicos",
-    stable_key="codigo_servico",
+    endpoint="https://app.omie.com.br/api/v1/servicos/servico/",
+    method="ListarCadastroServico",
+    stable_key="cabecalho.nCodServ",
     supports_incremental=False,
     default_mode=ExecutionMode.INCREMENTAL,
     page_size=50,
     metadata={
         "payload_key": "cadastros",
+        "page_param": "nPagina",
+        "page_size_param": "nRegPorPagina",
+        "total_pages_key": "nTotPaginas",
         "target_table": "omie_services",
         "conflict_column": "external_id",
-        "stable_key_candidates": ["codigo_servico", "codi_servico", "codigo"],
+        "stable_key_candidates": ["cabecalho.cCodigo", "intListar.nCodServ", "intListar.cCodIntServ"],
     },
 )
