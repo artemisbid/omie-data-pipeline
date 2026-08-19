@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from .models import ExecutionMode, ExecutionStatus, RawRunManifest, ResourceSpec, RunContext
-from .ports import CheckpointStorePort, ExtractorPort, LoaderPort, RawStorePort, TransformerPort
+from .ports import CheckpointStorePort, ExecutionStorePort, ExtractorPort, LoaderPort, RawStorePort, TransformerPort
 
 
 @dataclass(slots=True)
@@ -22,6 +22,7 @@ class PipelineServices:
     transformer: TransformerPort
     loader: LoaderPort
     checkpoints: CheckpointStorePort | None = None
+    execution_store: ExecutionStorePort | None = None
 
 
 def execute_resource(
@@ -34,12 +35,24 @@ def execute_resource(
     normalized = []
     rejected = []
     try:
+        running_manifest = RawRunManifest(
+            run_id=context.run_id,
+            resource=resource.name,
+            account_id=context.account_id,
+            mode=mode,
+            started_at=context.started_at,
+        )
+        if services.execution_store:
+            services.execution_store.start(running_manifest)
+
         pages = list(services.extractor.extract(resource, context, mode))
         for page in pages:
             services.raw_store.write_page(context, resource, page)
 
         normalized, rejected = services.transformer.transform(resource, pages)
         services.raw_store.write_rejections(context, resource, rejected)
+        if services.execution_store:
+            services.execution_store.write_rejections(context, resource, rejected)
         services.loader.load(resource, normalized)
 
         status = ExecutionStatus.SUCCESS if not rejected else ExecutionStatus.PARTIAL
@@ -55,6 +68,8 @@ def execute_resource(
             status=status,
         )
         services.raw_store.write_manifest(context, manifest)
+        if services.execution_store:
+            services.execution_store.finish(manifest)
 
         if services.checkpoints and normalized and status == ExecutionStatus.SUCCESS:
             services.checkpoints.set(resource.name.value, normalized[-1].external_id)
@@ -79,6 +94,8 @@ def execute_resource(
             error=f"{type(exc).__name__}: {exc}",
         )
         services.raw_store.write_manifest(context, manifest)
+        if services.execution_store:
+            services.execution_store.finish(manifest)
         return RunResult(
             manifest=manifest,
             status=manifest.status,

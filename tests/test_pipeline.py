@@ -41,6 +41,28 @@ class FailingLoader:
         raise RuntimeError("supabase unavailable")
 
 
+class ExecutionStore:
+    def __init__(self):
+        self.started = []
+        self.finished = []
+        self.rejections = []
+
+    def start(self, manifest):
+        self.started.append(manifest)
+
+    def finish(self, manifest):
+        self.finished.append(manifest)
+
+    def write_rejections(self, context, resource, rejected):
+        self.rejections.extend(rejected)
+
+    def get(self, resource_name):
+        return None
+
+    def set(self, resource_name, checkpoint):
+        pass
+
+
 def customer_page() -> RawPage:
     return RawPage(page_number=1, payload={"clientes_cadastro": [{"codigo_cliente_omie": 10, "razao_social": "A"}]})
 
@@ -100,6 +122,18 @@ def test_loader_failure_writes_failed_manifest_without_checkpoint(tmp_path: Path
     assert manifest["status"] == "failed"
     assert "supabase unavailable" in manifest["error"]
     assert checkpoints.values == {}
+
+
+def test_execution_store_tracks_running_and_finished_status(tmp_path: Path) -> None:
+    execution_store = ExecutionStore()
+    services = services_for(tmp_path, LoadWorker(InMemorySupabaseSink()))
+    services.execution_store = execution_store
+
+    result = execute_resource(services, CUSTOMERS, RunContext(run_id="run-tracked"), ExecutionMode.FULL)
+
+    assert result.status == ExecutionStatus.SUCCESS
+    assert execution_store.started[0].status == ExecutionStatus.RUNNING
+    assert execution_store.finished[0].status == ExecutionStatus.SUCCESS
 
 
 def test_in_memory_sink_upsert_is_idempotent() -> None:

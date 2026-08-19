@@ -13,7 +13,7 @@ Estados usados:
 3. Extract de Clientes — `in progress`
 4. Extract de Serviços — `planned`
 5. Transformações — `planned`
-6. Load no Supabase — `planned`
+6. Load no Supabase — `in progress`
 7. Orquestração e replay — `planned`
 8. Testes end-to-end — `planned`
 9. Automação futura — `planned`

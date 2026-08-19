@@ -41,9 +41,23 @@ def test_client_paginates_without_network(monkeypatch) -> None:
     assert "app_secret" in calls[0]
 
 
+def test_client_can_limit_pages_for_controlled_runs() -> None:
+    responses = [
+        {"pagina": 1, "total_de_paginas": 3, "clientes_cadastro": [{"codigo_cliente_omie": 1}]},
+        {"pagina": 2, "total_de_paginas": 3, "clientes_cadastro": [{"codigo_cliente_omie": 2}]},
+    ]
+
+    class FakeOmieClient(OmieClient):
+        def post(self, endpoint: str, payload: dict) -> dict:
+            return responses[payload["param"][0]["pagina"] - 1]
+
+    pages = FakeOmieClient(OmieCredentials("fake", "fake")).list_pages(CUSTOMERS, page_size=50, max_pages=1)
+    assert [page.page_number for page in pages] == [1]
+
+
 def test_extract_worker_applies_resource_defaults() -> None:
     class FakeClient:
-        def list_pages(self, resource, *, page_size, extra_params):
+        def list_pages(self, resource, *, page_size, extra_params, max_pages=None):
             assert extra_params["apenas_importado_api"] == "N"
             assert page_size == 50
             return []

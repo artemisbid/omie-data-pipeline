@@ -13,6 +13,7 @@ from extract.worker import ExtractWorker
 from extract.rate_limit import RetryPolicy
 from load.local_sink import InMemorySupabaseSink
 from load.supabase_sink import SupabaseRestSink
+from load.supabase_execution_store import SupabaseExecutionStore
 from load.worker import LoadWorker
 from pipeline.replay import ReplayRunner
 from pipeline.runner import PipelineRunner
@@ -32,6 +33,7 @@ def build_parser() -> argparse.ArgumentParser:
         subparser = subparsers.add_parser(command)
         subparser.add_argument("--resource", choices=("customers", "services", "all"), default="all")
         subparser.add_argument("--mode", choices=("full", "incremental"), default="full")
+        subparser.add_argument("--max-pages", type=int, default=None, help="limite local de páginas para teste controlado")
 
     replay = subparsers.add_parser("replay")
     replay.add_argument("--resource", choices=("customers", "services"), required=True)
@@ -44,15 +46,16 @@ def _resources(name: str):
     return catalog, list(catalog.list()) if name == "all" else [catalog.get(name)]
 
 
-def _services(config: AppConfig, *, use_supabase: bool) -> tuple[PipelineServices, LocalRawStore]:
+def _services(config: AppConfig, *, use_supabase: bool, max_pages: int | None = None) -> tuple[PipelineServices, LocalRawStore]:
     raw_store = LocalRawStore(config.raw_data_dir)
     client = OmieClient(
         OmieCredentials(config.omie_app_key, config.omie_app_secret),
         timeout_seconds=config.http_timeout,
         retry_policy=RetryPolicy(max_retries=config.http_max_retries),
     )
+    execution_store = SupabaseExecutionStore(config.supabase_url, config.supabase_service_role_key) if use_supabase else None
     services = PipelineServices(
-        extractor=ExtractWorker(client),
+            extractor=ExtractWorker(client, max_pages=max_pages),
         raw_store=raw_store,
         transformer=ResourceTransformer(),
         loader=LoadWorker(
@@ -60,6 +63,8 @@ def _services(config: AppConfig, *, use_supabase: bool) -> tuple[PipelineService
             if use_supabase
             else InMemorySupabaseSink()
         ),
+        checkpoints=execution_store,
+        execution_store=execution_store,
     )
     return services, raw_store
 
@@ -72,7 +77,11 @@ def main(argv: list[str] | None = None) -> int:
         config.validate_extract_config()
     if args.command in {"run", "replay"}:
         config.validate_load_config()
-    services, raw_store = _services(config, use_supabase=args.command in {"run", "replay"})
+    services, raw_store = _services(
+        config,
+        use_supabase=args.command in {"run", "replay"},
+        max_pages=getattr(args, "max_pages", None),
+    )
 
     if args.command == "replay":
         result = ReplayRunner(services, raw_store).run(selected[0], args.run_id, config.omie_company_id)

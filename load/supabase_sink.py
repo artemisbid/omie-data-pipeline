@@ -31,12 +31,7 @@ class SupabaseRestSink(SupabaseWriterPort):
 
     @staticmethod
     def _row(record: NormalizedRecord) -> dict:
-        return {
-            "external_id": record.external_id,
-            "source": record.source.value,
-            "data": dict(record.data),
-            "source_payload": dict(record.source_payload),
-        }
+        return {"external_id": record.external_id, **dict(record.data), "source_payload": dict(record.source_payload)}
 
     def _post(self, endpoint: str, payload: list[dict], conflict_column: str) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")

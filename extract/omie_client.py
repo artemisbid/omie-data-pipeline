@@ -60,7 +60,10 @@ class OmieClient:
         *,
         page_size: int,
         extra_params: dict[str, Any] | None = None,
+        max_pages: int | None = None,
     ) -> list[RawPage]:
+        if max_pages is not None and max_pages <= 0:
+            raise ValueError("max_pages must be greater than zero when provided")
         payload_key = str(resource.metadata.get("payload_key", "cadastros"))
         page_param = str(resource.metadata.get("page_param", "pagina"))
         page_size_param = str(resource.metadata.get("page_size_param", "registros_por_pagina"))
@@ -86,6 +89,9 @@ class OmieClient:
                 },
             )
             pages.append(RawPage(page_number=current_page, payload=response))
+
+            if max_pages is not None and len(pages) >= max_pages:
+                break
 
             if not has_more_pages(response, current_page, payload_key, total_pages_key=total_pages_key):
                 break

@@ -51,3 +51,16 @@ class CheckpointStorePort(Protocol):
     def get(self, resource_name: str) -> str | None: ...
 
     def set(self, resource_name: str, checkpoint: str) -> None: ...
+
+
+class ExecutionStorePort(Protocol):
+    def start(self, manifest: RawRunManifest) -> None: ...
+
+    def finish(self, manifest: RawRunManifest) -> None: ...
+
+    def write_rejections(
+        self,
+        context: RunContext,
+        resource: ResourceSpec,
+        rejected: Sequence[RejectedRecord],
+    ) -> None: ...
