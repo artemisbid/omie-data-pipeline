@@ -2,7 +2,7 @@
 
 Pipeline ETL planejado para extrair dados da Omie, preservar payloads brutos, transformar os dados em estruturas úteis para análise e carregar o resultado no Supabase com upsert idempotente.
 
-Status atual: documentação e fundação inicial estruturadas. Os contratos, adaptadores locais e testes estão em construção; a integração real com Omie e Supabase permanece planejada.
+Status atual: fundação, extração, transformação, carga controlada no Supabase e replay já validados localmente. A validação end-to-end ampliada e a operação contínua ainda estão em preparação.
 
 Classificação usada nesta documentação:
 
@@ -76,14 +76,14 @@ ADRs:
 
 Roadmap em alto nível:
 
-1. Documentação
-2. Fundação Python
-3. Extract de Clientes
-4. Extract de Serviços
-5. Transformações
-6. Load no Supabase
-7. Orquestração e replay
-8. Testes end-to-end
+1. Documentação — concluída
+2. Fundação Python — concluída
+3. Extract de Clientes — concluído
+4. Extract de Serviços — concluído
+5. Transformações — concluídas
+6. Load no Supabase — concluído
+7. Orquestração e replay — concluídos
+8. Testes end-to-end — em andamento
 9. Automação futura
 
 Avisos importantes:

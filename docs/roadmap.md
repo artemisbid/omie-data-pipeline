@@ -9,16 +9,20 @@ Estados usados:
 ## Marcos
 
 1. Documentação — `done`
-2. Fundação Python — `in progress`
-3. Extract de Clientes — `in progress`
-4. Extract de Serviços — `planned`
-5. Transformações — `planned`
-6. Load no Supabase — `in progress`
-7. Orquestração e replay — `planned`
-8. Testes end-to-end — `planned`
+2. Fundação Python — `done`
+3. Extract de Clientes — `done`
+4. Extract de Serviços — `done`
+5. Transformações — `done`
+6. Load no Supabase — `done`
+7. Orquestração e replay — `done`
+8. Testes end-to-end — `in progress`
 9. Automação futura — `planned`
 
 ## Observações
 
 - O roadmap reflete a intenção atual do MVP.
+- Clientes e Serviços já foram extraídos em execução controlada, transformados,
+  carregados no Supabase e reprocessados por replay.
+- A validação end-to-end ainda será ampliada para cenários de falha, múltiplas
+  páginas e execução completa dos recursos.
 - Mudanças de escopo devem atualizar este documento e, se necessário, os ADRs.
