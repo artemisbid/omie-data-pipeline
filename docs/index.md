@@ -18,6 +18,7 @@ Leitura sugerida:
 6. [Desenvolvimento](development.md)
 7. [Segurança](security.md)
 8. [Roadmap](roadmap.md)
+9. [Contrato financeiro inicial](financial-data-contract.md)
 
 Decisões arquiteturais:
 

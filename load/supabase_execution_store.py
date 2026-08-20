@@ -103,6 +103,7 @@ class SupabaseExecutionStore(ExecutionStorePort, CheckpointStorePort):
                 raw = response.read().decode("utf-8")
                 return json.loads(raw) if raw else []
         except error.HTTPError as exc:
-            raise LoadError(f"Supabase operational write failed with HTTP {exc.code}") from exc
+            details = exc.read().decode("utf-8", errors="replace")[:500]
+            raise LoadError(f"Supabase operational write failed with HTTP {exc.code}: {details}") from exc
         except (error.URLError, TimeoutError, json.JSONDecodeError) as exc:
             raise LoadError("Supabase operational write failed") from exc

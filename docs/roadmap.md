@@ -17,6 +17,7 @@ Estados usados:
 7. Orquestração e replay — `done`
 8. Testes end-to-end — `done`
 9. Automação futura — `planned`
+10. Fundação financeira — `in progress`
 
 ## Observações
 
@@ -26,3 +27,5 @@ Estados usados:
 - A validação end-to-end foi concluída com múltiplas páginas, falhas simuladas,
   replay, idempotência e carga completa dos recursos.
 - Mudanças de escopo devem atualizar este documento e, se necessário, os ADRs.
+- O primeiro lote financeiro aprovado é `Contas a Receber` e `Categorias`.
+- A migration financeira aguarda a confirmação dos payloads reais da Omie.

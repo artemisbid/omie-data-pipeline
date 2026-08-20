@@ -28,7 +28,7 @@ create index if not exists pipeline_rejections_run_id_idx
     on public.pipeline_rejections (run_id);
 
 create table if not exists public.pipeline_checkpoints (
-    resource text primary key check (resource in ('customers', 'services')),
+    resource text primary key check (resource in ('customers', 'services', 'receivables', 'categories')),
     checkpoint text not null,
     updated_at timestamptz not null default now()
 );

@@ -10,6 +10,8 @@ from uuid import uuid4
 class ResourceName(StrEnum):
     CUSTOMERS = "customers"
     SERVICES = "services"
+    RECEIVABLES = "receivables"
+    CATEGORIES = "categories"
 
 
 class ExecutionMode(StrEnum):

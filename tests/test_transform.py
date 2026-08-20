@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from core.models import RawPage
-from extract.resources import CUSTOMERS, SERVICES
+from extract.resources import CATEGORIES, CUSTOMERS, RECEIVABLES, SERVICES
 from transform.workers import transform_resource
 
 
@@ -81,6 +81,52 @@ def test_invalid_collection_is_rejected() -> None:
     valid, rejected = transform_resource(CUSTOMERS, [RawPage(page_number=1, payload={"clientes_cadastro": {}})])
     assert valid == []
     assert rejected[0].reason == "clientes_cadastro payload invalid"
+
+
+def test_receivables_transform_normalizes_financial_fields() -> None:
+    valid, rejected = transform_resource(
+        RECEIVABLES,
+        [RawPage(page_number=1, payload={"conta_receber_cadastro": [{
+            "codigo_lancamento_omie": 7001,
+            "codigo_cliente_fornecedor": 101,
+            "codigo_categoria": "1.01",
+            "data_vencimento": "20/08/2026",
+            "valor_documento": 1250.50,
+            "status_titulo": "A VENCER",
+        }]})],
+    )
+    assert not rejected
+    assert valid[0].external_id == "7001"
+    assert valid[0].data["customer_id"] == 101
+    assert valid[0].data["due_at"] == "2026-08-20"
+    assert valid[0].data["original_amount"] == 1250.5
+
+
+def test_categories_transform_uses_declared_candidates() -> None:
+    valid, rejected = transform_resource(
+        CATEGORIES,
+        [RawPage(page_number=1, payload={"categoria_cadastro": [{
+            "codigo": 10,
+            "descricao": "Receita",
+            "codigo_dre": "1",
+            "conta_inativa": "N",
+        }]})],
+    )
+    assert not rejected
+    assert valid[0].external_id == "10"
+    assert valid[0].data["name"] == "Receita"
+    assert valid[0].data["inactive"] is False
+
+
+def test_categories_transform_derives_hierarchy() -> None:
+    valid, rejected = transform_resource(
+        CATEGORIES,
+        [RawPage(page_number=1, payload={"categoria_cadastro": [{"codigo": "2.11.99", "descricao": "Folha"}]})],
+    )
+    assert not rejected
+    assert valid[0].data["category_code"] == "2.11.99"
+    assert valid[0].data["parent_category_code"] == "2.11"
+    assert valid[0].data["category_level"] == 3
 
 
 def test_customers_transform_flattens_real_api_fields() -> None:

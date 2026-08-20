@@ -39,3 +39,36 @@ SERVICES = ResourceSpec(
         "stable_key_candidates": ["cabecalho.cCodigo", "intListar.nCodServ", "intListar.cCodIntServ"],
     },
 )
+
+RECEIVABLES = ResourceSpec(
+    name=ResourceName.RECEIVABLES,
+    endpoint="https://app.omie.com.br/api/v1/financas/contareceber/",
+    method="ListarContasReceber",
+    stable_key="codigo_lancamento_omie",
+    supports_incremental=False,
+    default_mode=ExecutionMode.FULL,
+    page_size=50,
+    metadata={
+        "payload_key": "conta_receber_cadastro",
+        "payload_key_candidates": ("conta_receber_cadastro", "contas_receber"),
+        "target_table": "omie_receivables",
+        "conflict_column": "external_id",
+        "request_defaults": {"apenas_importado_api": "N"},
+    },
+)
+
+CATEGORIES = ResourceSpec(
+    name=ResourceName.CATEGORIES,
+    endpoint="https://app.omie.com.br/api/v1/geral/categorias/",
+    method="ListarCategorias",
+    stable_key="codigo",
+    supports_incremental=False,
+    default_mode=ExecutionMode.FULL,
+    page_size=50,
+    metadata={
+        "payload_key": "categoria_cadastro",
+        "payload_key_candidates": ("categoria_cadastro", "categorias", "cadastro"),
+        "target_table": "omie_categories",
+        "conflict_column": "external_id",
+    },
+)

@@ -8,7 +8,7 @@ from core.models import ExecutionMode, RawRunManifest, ExecutionStatus, RunConte
 from core.use_cases import PipelineServices
 from extract.omie_client import OmieClient, OmieCredentials
 from extract.raw_store import LocalRawStore
-from extract.resources import CUSTOMERS, SERVICES
+from extract.resources import CATEGORIES, CUSTOMERS, RECEIVABLES, SERVICES
 from extract.worker import ExtractWorker
 from extract.rate_limit import RetryPolicy
 from load.local_sink import InMemorySupabaseSink
@@ -31,18 +31,18 @@ def build_parser() -> argparse.ArgumentParser:
 
     for command in ("run", "extract"):
         subparser = subparsers.add_parser(command)
-        subparser.add_argument("--resource", choices=("customers", "services", "all"), default="all")
+        subparser.add_argument("--resource", choices=("customers", "services", "receivables", "categories", "all"), default="all")
         subparser.add_argument("--mode", choices=("full", "incremental"), default="full")
         subparser.add_argument("--max-pages", type=int, default=None, help="limite local de páginas para teste controlado")
 
     replay = subparsers.add_parser("replay")
-    replay.add_argument("--resource", choices=("customers", "services"), required=True)
+    replay.add_argument("--resource", choices=("customers", "services", "receivables", "categories"), required=True)
     replay.add_argument("--run-id", required=True)
     return parser
 
 
 def _resources(name: str):
-    catalog = InMemoryResourceCatalog((CUSTOMERS, SERVICES))
+    catalog = InMemoryResourceCatalog((CUSTOMERS, SERVICES, RECEIVABLES, CATEGORIES))
     return catalog, list(catalog.list()) if name == "all" else [catalog.get(name)]
 
 
