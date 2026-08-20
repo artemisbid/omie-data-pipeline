@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from decimal import Decimal
 from core.models import RawPage
 from extract.resources import BANK_ACCOUNTS, CATEGORIES, CUSTOMERS, DEPARTMENTS, DRE_ACCOUNTS, PAYABLES, PROJECTS, RECEIVABLES, SERVICES
 from transform.workers import transform_resource
+from transform.allocation import allocate_amount
 
 
 def test_customers_transform_valid_and_rejected_records() -> None:
@@ -157,6 +159,23 @@ def test_financial_dimensions_transform_real_fields() -> None:
     assert dept[0].data["department_code"] == "D1"
     assert project[0].data["project_id"] == 10
     assert bank[0].data["bank_account_id"] == 20
+
+
+def test_allocation_defaults_to_full_amount_without_distribution() -> None:
+    allocations = allocate_amount("1000.00", None)
+    assert allocations[0].percentage == 100
+    assert allocations[0].amount == 1000
+
+
+def test_allocation_preserves_total_with_rounding_residual() -> None:
+    allocations = allocate_amount(100, [{"cCodDep": "A", "nPerDep": 33.33}, {"cCodDep": "B", "nPerDep": 33.33}, {"cCodDep": "C", "nPerDep": 33.34}])
+    assert sum(item.amount for item in allocations) == 100
+    assert [item.amount for item in allocations] == [Decimal("33.33"), Decimal("33.33"), Decimal("33.34")]
+
+
+def test_allocation_prefers_explicit_amount() -> None:
+    allocations = allocate_amount(1000, [{"cCodDep": "A", "nPerDep": 50, "nValDep": 700}, {"cCodDep": "B", "nPerDep": 50, "nValDep": 300}])
+    assert [item.amount for item in allocations] == [Decimal("700.00"), Decimal("300.00")]
 
 
 def test_customers_transform_flattens_real_api_fields() -> None:
