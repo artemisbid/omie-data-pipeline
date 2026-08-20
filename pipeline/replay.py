@@ -21,5 +21,6 @@ class ReplayRunner:
             transformer=self.services.transformer,
             loader=self.services.loader,
             checkpoints=self.services.checkpoints,
+            execution_store=self.services.execution_store,
         )
         return execute_resource(replay_services, resource, context, ExecutionMode.REPLAY)

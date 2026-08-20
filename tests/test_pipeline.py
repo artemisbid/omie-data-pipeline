@@ -6,7 +6,7 @@ from pathlib import Path
 from core.models import ExecutionMode, ExecutionStatus, RawPage, ResourceSpec, ResourceName, RunContext
 from core.use_cases import PipelineServices, execute_resource
 from extract.raw_store import LocalRawStore
-from extract.resources import CUSTOMERS
+from extract.resources import CUSTOMERS, SERVICES
 from load.local_sink import InMemorySupabaseSink
 from load.worker import LoadWorker
 from transform.workers import transform_resource
@@ -65,6 +65,13 @@ class ExecutionStore:
 
 def customer_page() -> RawPage:
     return RawPage(page_number=1, payload={"clientes_cadastro": [{"codigo_cliente_omie": 10, "razao_social": "A"}]})
+
+
+def service_page(page_number: int, service_id: int) -> RawPage:
+    return RawPage(
+        page_number=page_number,
+        payload={"cadastros": [{"intListar": {"nCodServ": service_id}, "descricao": {"cDescrCompleta": "S"}}]},
+    )
 
 
 def services_for(tmp_path: Path, loader):
@@ -133,6 +140,47 @@ def test_execution_store_tracks_running_and_finished_status(tmp_path: Path) -> N
 
     assert result.status == ExecutionStatus.SUCCESS
     assert execution_store.started[0].status == ExecutionStatus.RUNNING
+    assert execution_store.finished[0].status == ExecutionStatus.SUCCESS
+
+
+def test_multiple_pages_are_persisted_and_counted(tmp_path: Path) -> None:
+    pages = [service_page(1, 10), service_page(2, 20)]
+    services = PipelineServices(
+        extractor=FakeExtractor(pages),
+        raw_store=LocalRawStore(tmp_path),
+        transformer=FakeTransformer(),
+        loader=LoadWorker(InMemorySupabaseSink()),
+    )
+
+    result = execute_resource(services, SERVICES, RunContext(run_id="run-pages"), ExecutionMode.FULL)
+
+    run_dir = tmp_path / "default" / "services" / "run-pages"
+    assert result.status == ExecutionStatus.SUCCESS
+    assert result.records_loaded == 2
+    assert result.manifest.page_count == 2
+    assert (run_dir / "pages" / "page_0002.json").exists()
+
+
+def test_replay_runner_uses_raw_pages_and_preserves_execution_store(tmp_path: Path) -> None:
+    from pipeline.replay import ReplayRunner
+
+    raw_store = LocalRawStore(tmp_path)
+    context = RunContext(run_id="run-services-replay")
+    raw_store.write_page(context, SERVICES, service_page(1, 99))
+    execution_store = ExecutionStore()
+    sink = InMemorySupabaseSink()
+    services = PipelineServices(
+        extractor=FakeExtractor([]),
+        raw_store=raw_store,
+        transformer=FakeTransformer(),
+        loader=LoadWorker(sink),
+        execution_store=execution_store,
+    )
+
+    result = ReplayRunner(services, raw_store).run(SERVICES, context.run_id)
+
+    assert result.status == ExecutionStatus.SUCCESS
+    assert sink.records[("services", "99")].data["service_id"] == 99
     assert execution_store.finished[0].status == ExecutionStatus.SUCCESS
 
 
