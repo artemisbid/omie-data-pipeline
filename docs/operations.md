@@ -94,11 +94,13 @@ Política inicial:
 - A reexecução de Clientes manteve a mesma quantidade de registros, validando
   o upsert idempotente.
 - O replay foi executado com sucesso a partir dos JSONs locais.
+- A carga completa de Clientes e Serviços foi executada sem limite de páginas.
+- A tabela `omie_services` foi conferida com 136 registros após a carga completa.
 
 ## Limitações conhecidas
 
 - A estratégia incremental ainda não está habilitada para produção; o
   checkpoint temporal precisa de contrato validado com a Omie.
-- Ainda faltam testes ampliados de múltiplas páginas, falha do Supabase e
-  execução completa sem limite de páginas.
+- A operação incremental ainda depende de um contrato temporal validado com a
+  Omie; a carga atual permanece no modo `full`.
 - Periodicidade e retenção dos arquivos brutos ainda não foram definidas.

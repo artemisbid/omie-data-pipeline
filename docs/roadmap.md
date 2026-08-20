@@ -15,7 +15,7 @@ Estados usados:
 5. Transformações — `done`
 6. Load no Supabase — `done`
 7. Orquestração e replay — `done`
-8. Testes end-to-end — `in progress`
+8. Testes end-to-end — `done`
 9. Automação futura — `planned`
 
 ## Observações
@@ -23,6 +23,6 @@ Estados usados:
 - O roadmap reflete a intenção atual do MVP.
 - Clientes e Serviços já foram extraídos em execução controlada, transformados,
   carregados no Supabase e reprocessados por replay.
-- A validação end-to-end ainda será ampliada para cenários de falha, múltiplas
-  páginas e execução completa dos recursos.
+- A validação end-to-end foi concluída com múltiplas páginas, falhas simuladas,
+  replay, idempotência e carga completa dos recursos.
 - Mudanças de escopo devem atualizar este documento e, se necessário, os ADRs.
