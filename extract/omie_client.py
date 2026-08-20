@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import json
+import re
+import time
 from typing import Any
 from urllib import error, request
 
@@ -39,7 +41,15 @@ class OmieClient:
                 with request.urlopen(req, timeout=self.timeout_seconds) as response:
                     return json.loads(response.read().decode("utf-8"))
             except error.HTTPError as exc:
-                last_error = exc
+                response_body = exc.read().decode("utf-8", errors="replace")[:500]
+                last_error = ExtractError(f"HTTP {exc.code}: {response_body}")
+                if "REDUNDANT" in response_body or "Consumo redundante" in response_body:
+                    match = re.search(r"Aguarde\s+(\d+)\s+segundos", response_body, flags=re.IGNORECASE)
+                    wait_seconds = int(match.group(1)) if match else 60
+                    if self.retry_policy.should_retry(attempt):
+                        time.sleep(wait_seconds + 2)
+                        attempt += 1
+                        continue
                 retryable = exc.code == 429 or 500 <= exc.code < 600
                 if not retryable or not self.retry_policy.should_retry(attempt):
                     break
@@ -52,7 +62,7 @@ class OmieClient:
             except json.JSONDecodeError as exc:
                 raise ExtractError(f"Omie returned invalid JSON for endpoint={endpoint}") from exc
 
-        raise ExtractError(f"Omie request failed for endpoint={endpoint}") from last_error
+        raise ExtractError(f"Omie request failed for endpoint={endpoint}: {last_error}") from last_error
 
     def list_pages(
         self,
@@ -70,14 +80,19 @@ class OmieClient:
         total_pages_key = str(resource.metadata.get("total_pages_key", "total_de_paginas"))
         current_page = 1
         pages: list[RawPage] = []
+        paginated = bool(resource.metadata.get("pagination", True))
 
         while True:
-            params = build_page_params(
-                current_page,
-                page_size,
-                extra_params,
-                page_param=page_param,
-                page_size_param=page_size_param,
+            params = (
+                build_page_params(
+                    current_page,
+                    page_size,
+                    extra_params,
+                    page_param=page_param,
+                    page_size_param=page_size_param,
+                )
+                if paginated
+                else dict(extra_params or {})
             )
             response = self.post(
                 resource.endpoint,
@@ -90,7 +105,7 @@ class OmieClient:
             )
             pages.append(RawPage(page_number=current_page, payload=response))
 
-            if max_pages is not None and len(pages) >= max_pages:
+            if not paginated or (max_pages is not None and len(pages) >= max_pages):
                 break
 
             if not has_more_pages(response, current_page, payload_key, total_pages_key=total_pages_key):

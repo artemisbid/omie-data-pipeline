@@ -72,3 +72,60 @@ CATEGORIES = ResourceSpec(
         "conflict_column": "external_id",
     },
 )
+
+PAYABLES = ResourceSpec(
+    name=ResourceName.PAYABLES,
+    endpoint="https://app.omie.com.br/api/v1/financas/contapagar/",
+    method="ListarContasPagar",
+    stable_key="codigo_lancamento_omie",
+    supports_incremental=False,
+    default_mode=ExecutionMode.FULL,
+    page_size=50,
+    metadata={
+        "payload_key": "conta_pagar_cadastro",
+        "payload_key_candidates": ("conta_pagar_cadastro", "contas_pagar"),
+        "target_table": "omie_payables",
+        "conflict_column": "external_id",
+        "request_defaults": {"apenas_importado_api": "N"},
+    },
+)
+
+DRE_ACCOUNTS = ResourceSpec(
+    name=ResourceName.DRE_ACCOUNTS,
+    endpoint="https://app.omie.com.br/api/v1/geral/dre/",
+    method="ListarCadastroDRE",
+    stable_key="codigoDRE",
+    default_mode=ExecutionMode.FULL,
+    page_size=None,
+    metadata={"payload_key_candidates": ("dreLista", "dre_cadastro", "contasDRE", "cadastro", "lista"), "target_table": "omie_dre_accounts", "conflict_column": "external_id", "pagination": False, "request_defaults": {"apenasContasAtivas": "N"}},
+)
+
+DEPARTMENTS = ResourceSpec(
+    name=ResourceName.DEPARTMENTS,
+    endpoint="https://app.omie.com.br/api/v1/geral/departamentos/",
+    method="ListarDepatartamentos",
+    stable_key="codigo",
+    default_mode=ExecutionMode.FULL,
+    page_size=50,
+    metadata={"payload_key_candidates": ("departamentos", "departamento_cadastro", "cadastro"), "target_table": "omie_departments", "conflict_column": "external_id"},
+)
+
+PROJECTS = ResourceSpec(
+    name=ResourceName.PROJECTS,
+    endpoint="https://app.omie.com.br/api/v1/geral/projetos/",
+    method="ListarProjetos",
+    stable_key="codigo",
+    default_mode=ExecutionMode.FULL,
+    page_size=50,
+    metadata={"payload_key_candidates": ("cadastro", "projetos"), "target_table": "omie_projects", "conflict_column": "external_id"},
+)
+
+BANK_ACCOUNTS = ResourceSpec(
+    name=ResourceName.BANK_ACCOUNTS,
+    endpoint="https://app.omie.com.br/api/v1/geral/contacorrente/",
+    method="ListarContasCorrentes",
+    stable_key="nCodCC",
+    default_mode=ExecutionMode.FULL,
+    page_size=50,
+    metadata={"payload_key_candidates": ("ListarContasCorrentes", "cadastro", "contas_correntes"), "target_table": "omie_bank_accounts", "conflict_column": "external_id"},
+)

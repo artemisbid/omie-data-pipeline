@@ -16,6 +16,7 @@ class SupabaseRestSink(SupabaseWriterPort):
     url: str
     service_role_key: str
     batch_size: int = 500
+    timeout_seconds: int = 30
 
     def upsert(self, resource: ResourceSpec, records: Sequence[NormalizedRecord]) -> None:
         if self.batch_size <= 0:
@@ -47,9 +48,10 @@ class SupabaseRestSink(SupabaseWriterPort):
             method="POST",
         )
         try:
-            with request.urlopen(req, timeout=30):
+            with request.urlopen(req, timeout=self.timeout_seconds):
                 return
         except error.HTTPError as exc:
-            raise LoadError(f"Supabase upsert failed with HTTP {exc.code}") from exc
+            details = exc.read().decode("utf-8", errors="replace")[:500]
+            raise LoadError(f"Supabase upsert failed with HTTP {exc.code}: {details}") from exc
         except (error.URLError, TimeoutError) as exc:
-            raise LoadError("Supabase upsert failed due to network error") from exc
+            raise LoadError(f"Supabase upsert failed due to network error: {exc}") from exc

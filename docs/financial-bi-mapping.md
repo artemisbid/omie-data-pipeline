@@ -16,7 +16,8 @@ Este documento é uma ponte técnica entre o BI legado e a implementação futur
 - Modelo semântico: confirmado por imagens, XMLs e modelo conceitual AS-IS.
 - ETL legado: analisado em `extract_omie.py`, `transform_entradas.py`, `transform_saidas.py`, `load.py` e `main.py`.
 - Periodicidade informada: aproximadamente 7 execuções diárias por cron/workers.
-- Nova stack atual: implementa apenas os recursos Omie de clientes e serviços.
+- Nova stack atual: implementa Clientes, Serviços, Categorias, Contas a Receber
+  e Contas a Pagar, com carga validada no Supabase.
 - Páginas e visuais: identificados nas telas do mockup; o uso exato de cada medida ainda deve ser validado no relatório.
 
 ## Linhagem atual
@@ -198,7 +199,9 @@ As views expostas pelo Data API devem permanecer protegidas por RLS e usar confi
 | `/api/v1/servicos/os/` | `ListarOS` | Receita operacional e indicadores comerciais |
 | `/api/v1/servicos/servico/` | `ListarCadastroServico` | Detalhamento de receitas por serviço |
 
-O projeto atual já possui clientes e serviços, mas ainda não possui os recursos financeiros acima. A inclusão deve seguir o padrão existente, sem conectar o dashboard diretamente à Omie.
+O projeto atual já possui clientes e serviços e iniciou os recursos financeiros
+com Categorias, Contas a Receber e Contas a Pagar. Os demais recursos devem
+seguir o padrão existente, sem conectar o dashboard diretamente à Omie.
 
 ## Periodicidade e execução
 
@@ -224,6 +227,45 @@ O processo legado é executado aproximadamente 7 vezes por dia por cron/workers.
 8. Validar os resultados contra períodos selecionados do PBI, sem transportar dados sensíveis para a documentação.
 9. Disponibilizar somente views necessárias para o Lovable.
 10. Descontinuar medidas DAX apenas depois da validação funcional.
+
+## Status de implementação na nova stack
+
+### Concluído
+
+- Extração, persistência bruta, transformação e replay de Clientes e Serviços.
+- Extração, transformação e carga de Categorias.
+- Normalização hierárquica de Categorias com `category_code`,
+  `parent_category_code` e `category_level`.
+- Extração, transformação e carga de Contas a Receber.
+- Extração, transformação e carga de Contas a Pagar.
+- Upsert idempotente e checkpoints por recurso.
+
+### Ainda pendente no ETL Python
+
+- Derivar `valor_rateado` a partir de `distribuicao`.
+- Normalizar rateios por departamento, projeto e categoria.
+- Calcular valores líquidos efetivamente recebidos e pagos.
+- Enriquecer lançamentos com DRE, departamentos, contas correntes e clientes.
+- Interpretar corretamente estados previsto, vencido, recebido, pago e cancelado.
+- Aplicar sinais de entrada e saída para os fatos financeiros.
+- Integrar movimentos financeiros e lançamentos de conta corrente.
+- Calcular e validar impostos, retenções, CBS e IBS quando presentes.
+- Criar dimensões de DRE, departamentos, contas correntes e projetos.
+
+### Ainda pendente no Supabase
+
+- Criar fatos `f_movements_dre`, `f_cash_flow_projected` e
+  `f_cash_flow_realized`.
+- Criar o schema `analytics`.
+- Criar views mensais da DRE e dos KPIs executivos.
+- Criar views de fluxo previsto, realizado, investimentos e financiamentos.
+- Implementar comparativos YoY e variação de margem em pontos percentuais.
+- Definir políticas de acesso para as views consumidas pelo Lovable.
+- Validar totais contra períodos selecionados do PBI legado.
+
+As regras de registro e normalização pertencem ao ETL Python. As consolidações,
+comparativos e KPIs pertencem ao PostgreSQL/Supabase. Nenhuma regra final deve
+ser duplicada no Lovable.
 
 ## Critérios de validação
 

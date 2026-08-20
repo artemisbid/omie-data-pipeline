@@ -12,6 +12,11 @@ class ResourceName(StrEnum):
     SERVICES = "services"
     RECEIVABLES = "receivables"
     CATEGORIES = "categories"
+    PAYABLES = "payables"
+    DRE_ACCOUNTS = "dre_accounts"
+    DEPARTMENTS = "departments"
+    PROJECTS = "projects"
+    BANK_ACCOUNTS = "bank_accounts"
 
 
 class ExecutionMode(StrEnum):

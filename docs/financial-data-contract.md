@@ -1,7 +1,8 @@
 # Contrato de dados financeiros — lote inicial
 
 Este documento inicia o contrato entre a API Omie, o ETL Python e o Supabase.
-O primeiro lote aprovado contém **Contas a Receber** e **Categorias**.
+O primeiro lote aprovado contém **Contas a Receber** e **Categorias**. O lote
+seguinte adiciona **Contas a Pagar** com o mesmo contrato operacional.
 
 Campos e chaves marcados como `a confirmar` não devem ser fixados em código ou
 migration antes de uma resposta real da API Omie.
@@ -12,6 +13,7 @@ migration antes de uma resposta real da API Omie.
 |---|---|---|---|
 | `receivables` | `/api/v1/financas/contareceber/` | `ListarContasReceber` | contrato inicial |
 | `categories` | `/api/v1/geral/categorias/` | `ListarCategorias` | contrato inicial |
+| `payables` | `/api/v1/financas/contapagar/` | `ListarContasPagar` | contrato do segundo lote |
 
 Ambos usam paginação no padrão `pagina` e `registros_por_pagina`, conforme o
 extrator legado. A extração local confirmou que o script legado consolidou os

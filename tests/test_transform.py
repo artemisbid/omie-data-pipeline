@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from core.models import RawPage
-from extract.resources import CATEGORIES, CUSTOMERS, RECEIVABLES, SERVICES
+from extract.resources import BANK_ACCOUNTS, CATEGORIES, CUSTOMERS, DEPARTMENTS, DRE_ACCOUNTS, PAYABLES, PROJECTS, RECEIVABLES, SERVICES
 from transform.workers import transform_resource
 
 
@@ -127,6 +127,36 @@ def test_categories_transform_derives_hierarchy() -> None:
     assert valid[0].data["category_code"] == "2.11.99"
     assert valid[0].data["parent_category_code"] == "2.11"
     assert valid[0].data["category_level"] == 3
+
+
+def test_payables_transform_normalizes_payment_fields() -> None:
+    valid, rejected = transform_resource(
+        PAYABLES,
+        [RawPage(page_number=1, payload={"conta_pagar_cadastro": [{
+            "codigo_lancamento_omie": 8001,
+            "codigo_cliente_fornecedor": 202,
+            "codigo_categoria": "2.01",
+            "data_vencimento": "25/08/2026",
+            "valor_documento": 800.0,
+            "status_titulo": "A PAGAR",
+        }]})],
+    )
+    assert not rejected
+    assert valid[0].external_id == "8001"
+    assert valid[0].data["supplier_id"] == 202
+    assert valid[0].data["due_at"] == "2026-08-25"
+
+
+def test_financial_dimensions_transform_real_fields() -> None:
+    dre, dre_rejected = transform_resource(DRE_ACCOUNTS, [RawPage(1, {"dre_cadastro": [{"codigoDRE": "1", "descricaoDRE": "Receita", "nivelDRE": 1}]})])
+    dept, dept_rejected = transform_resource(DEPARTMENTS, [RawPage(1, {"departamentos": [{"codigo": "D1", "descricao": "Financeiro", "inativo": "N"}]})])
+    project, project_rejected = transform_resource(PROJECTS, [RawPage(1, {"cadastro": [{"codigo": 10, "nome": "Projeto", "inativo": "N"}]})])
+    bank, bank_rejected = transform_resource(BANK_ACCOUNTS, [RawPage(1, {"ListarContasCorrentes": [{"nCodCC": 20, "descricao": "Banco"}]})])
+    assert not (dre_rejected or dept_rejected or project_rejected or bank_rejected)
+    assert dre[0].data["description"] == "Receita"
+    assert dept[0].data["department_code"] == "D1"
+    assert project[0].data["project_id"] == 10
+    assert bank[0].data["bank_account_id"] == 20
 
 
 def test_customers_transform_flattens_real_api_fields() -> None:
